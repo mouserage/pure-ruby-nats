@@ -93,9 +93,7 @@ module NATS
         # Read/Write IO
         @io = nil
 
-        # Queues for coalescing writes of commands we need to send to server.
-        @flush_queue = nil
-        @pending_queue = nil
+        init_queues
 
         # Parser with state
         @parser = NATS::Protocol::Parser.new(self)
@@ -224,8 +222,7 @@ module NATS
         end
 
         # Initialize queues and loops for message dispatching and processing engine
-        @flush_queue = SizedQueue.new(MAX_FLUSH_KICK_SIZE)
-        @pending_queue = SizedQueue.new(MAX_PENDING_SIZE)
+        init_queues
         @pings_outstanding = 0
         @pongs_received = 0
         @pending_size = 0
@@ -990,6 +987,12 @@ module NATS
           uri: @uri,
           connect_timeout: DEFAULT_CONNECT_TIMEOUT
         })
+      end
+
+      def init_queues
+        # Queues for coalescing writes of commands we need to send to server.
+        @flush_queue = SizedQueue.new(MAX_FLUSH_KICK_SIZE)
+        @pending_queue = SizedQueue.new(MAX_PENDING_SIZE)
       end
     end
 
